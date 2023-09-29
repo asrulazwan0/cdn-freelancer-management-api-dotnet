@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using CDNFM.Dtos;
 using CDNFM.Models;
 using CDNFM.Services;
 
@@ -63,16 +64,18 @@ namespace CDNFM.Controllers
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<User>> PostUser(UserDto userDto)
         {
-            var success = await userService.CreateUser(user);
-
-            if (!success)
+            try
             {
+                var user = await userService.CreateUser(userDto);
+                return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
+            }
+            catch (System.Exception)
+            {
+                
                 return Problem("Failed to create user.");
             }
-
-            return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
         }
 
         // DELETE: api/Users/5

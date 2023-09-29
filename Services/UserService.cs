@@ -1,4 +1,5 @@
 using CDNFM.Data.Repositories;
+using CDNFM.Dtos;
 using CDNFM.Models;
 
 namespace CDNFM.Services;
@@ -22,17 +23,19 @@ public class UserService : IUserService
         return await userRepository.GetAll();
     }
 
-    public async Task<bool> CreateUser(User user)
+    public async Task<User> CreateUser(UserDto userDto)
     {
-        try
-        {
-            await userRepository.Add(user);
-            return true;
-        }
-        catch (Exception)
-        {
-            return false;
-        }
+        var user = new User {
+            Username = userDto.Username,
+            Email = userDto.Email,
+            PhoneNumber = userDto.PhoneNumber,
+            Skillsets = userDto.Skillsets,
+            Hobby = userDto.Hobby,
+        };
+
+        await userRepository.Add(user);
+
+        return user;
     }
 
     public async Task<bool> UpdateUser(User user)
