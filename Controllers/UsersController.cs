@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using CDNFM.Models;
+using CDNFM.Services;
 
 namespace CDNFM.Controllers
 {
@@ -13,33 +8,27 @@ namespace CDNFM.Controllers
     [ApiController]
     public class UsersController : ControllerBase
     {
-        private readonly AppDbContext _context;
+        private readonly IUserService userService;
 
-        public UsersController(AppDbContext context)
+        public UsersController(IUserService userService)
         {
-            _context = context;
+            this.userService = userService;
         }
 
         // GET: api/Users
         [HttpGet]
         public async Task<ActionResult<IEnumerable<User>>> GetUsers()
         {
-            if (_context.Users == null)
-            {
-                return NotFound();
-            }
-            return await _context.Users.ToListAsync();
+            IEnumerable<User> users = await userService.GetAll();
+
+            return users.ToList();
         }
 
         // GET: api/Users/5
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(int id)
         {
-            if (_context.Users == null)
-            {
-                return NotFound();
-            }
-            var user = await _context.Users.FindAsync(id);
+            User user = await userService.GetById(id);
 
             if (user == null)
             {
@@ -54,30 +43,21 @@ namespace CDNFM.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUser(int id, User user)
         {
-            if (id != user.Id)
+            User userExists = await userService.GetById(id);
+            if (userExists == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(user).State = EntityState.Modified;
-
-            try
+            bool updateResult = await userService.UpdateUser(user);
+            if (updateResult)
             {
-                await _context.SaveChangesAsync();
+                return NoContent();
             }
-            catch (DbUpdateConcurrencyException)
+            else
             {
-                if (!UserExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                return StatusCode(500);
             }
-
-            return NoContent();
         }
 
         // POST: api/Users
@@ -85,13 +65,12 @@ namespace CDNFM.Controllers
         [HttpPost]
         public async Task<ActionResult<User>> PostUser(User user)
         {
-            if (_context.Users == null)
-            {
-                return Problem("Entity set 'AppDbContext.Users'  is null.");
-            }
+            var success = await userService.CreateUser(user);
 
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            if (!success)
+            {
+                return Problem("Failed to create user.");
+            }
 
             return CreatedAtAction(nameof(GetUser), new { id = user.Id }, user);
         }
@@ -100,25 +79,14 @@ namespace CDNFM.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            if (_context.Users == null)
-            {
-                return NotFound();
-            }
-            var user = await _context.Users.FindAsync(id);
-            if (user == null)
-            {
-                return NotFound();
-            }
+            var success = await userService.DeleteUser(id);
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            if (!success)
+            {
+                return NotFound();
+            }
 
             return NoContent();
-        }
-
-        private bool UserExists(int id)
-        {
-            return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }
