@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using CDNFM.Data;
 using CDNFM.Data.Repositories;
 using CDNFM.Models;
 using CDNFM.Services;
@@ -28,6 +29,15 @@ if (app.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
     app.UseMigrationsEndPoint();
 }
+
+using (var scope = app.Services.CreateScope())
+{
+   var services = scope.ServiceProvider;
+
+   var context = services.GetRequiredService<AppDbContext>();
+   DbInitializer.Initialize(context);
+}
+
 
 app.UseHttpsRedirection();
 
