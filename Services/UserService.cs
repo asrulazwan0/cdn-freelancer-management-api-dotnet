@@ -45,7 +45,13 @@ public class UserService : IUserService
 
         try
         {
-            await userRepository.Update(user);
+            userExists.Username = user.Username;
+            userExists.Email = user.Email;
+            userExists.PhoneNumber = user.PhoneNumber;
+            userExists.Skillsets = user.Skillsets;
+            userExists.Hobby = user.Hobby;
+
+            await userRepository.Update(userExists);
             return true;
         }
         catch (Exception)
