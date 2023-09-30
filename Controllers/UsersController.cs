@@ -42,23 +42,18 @@ namespace CDNFM.Controllers
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(int id, User user)
+        public async Task<IActionResult> PutUser(int id, UserDto userDto)
         {
-            User userExists = await userService.GetById(id);
-            if (userExists == null)
+            User user = await userService.GetById(id);
+            if (user == null)
             {
                 return NotFound();
             }
 
+            UpdateUserProperties(user, userDto);
+
             bool updateResult = await userService.UpdateUser(user);
-            if (updateResult)
-            {
-                return NoContent();
-            }
-            else
-            {
-                return StatusCode(500);
-            }
+            return updateResult ? NoContent() : StatusCode(500);
         }
 
         // POST: api/Users
@@ -90,6 +85,15 @@ namespace CDNFM.Controllers
             }
 
             return NoContent();
+        }
+    
+        private void UpdateUserProperties(User user, UserDto userDto)
+        {
+            user.Username = userDto.Username;
+            user.Email = userDto.Email;
+            user.PhoneNumber = userDto.PhoneNumber;
+            user.Skillsets = userDto.Skillsets;
+            user.Hobby = userDto.Hobby;
         }
     }
 }
