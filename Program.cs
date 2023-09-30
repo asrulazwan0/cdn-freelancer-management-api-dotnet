@@ -14,6 +14,16 @@ var config =
         .AddEnvironmentVariables()
         .Build();
 
+var dbHost = Environment.GetEnvironmentVariable("DB_HOST");
+var dbPort = Environment.GetEnvironmentVariable("DB_PORT");
+var dbName = Environment.GetEnvironmentVariable("DB_NAME");
+var dbUser = Environment.GetEnvironmentVariable("DB_USER");
+var dbPass = Environment.GetEnvironmentVariable("DB_PASS");
+var allowedHosts = Environment.GetEnvironmentVariable("ALLOWED_HOSTS");
+
+Environment.SetEnvironmentVariable("ConnectionStrings:DefaultConnection", $"Server={dbHost},{dbPort};Database={dbName};User Id={dbUser};Password={dbPass};TrustServerCertificate=True");
+Environment.SetEnvironmentVariable("allowedHosts", allowedHosts);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
