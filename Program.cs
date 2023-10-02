@@ -20,11 +20,27 @@ var dbName = Environment.GetEnvironmentVariable("DB_NAME");
 var dbUser = Environment.GetEnvironmentVariable("DB_USER");
 var dbPass = Environment.GetEnvironmentVariable("DB_PASS");
 var allowedHosts = Environment.GetEnvironmentVariable("ALLOWED_HOSTS");
+var allowedOrigins = Environment.GetEnvironmentVariable("ALLOWED_ORIGINS");
+string[] origins = allowedOrigins!.Split(",").Select(item => item.Trim()).ToArray();
 
 Environment.SetEnvironmentVariable("ConnectionStrings:DefaultConnection", $"Server={dbHost},{dbPort};Database={dbName};User Id={dbUser};Password={dbPass};TrustServerCertificate=True");
 Environment.SetEnvironmentVariable("allowedHosts", allowedHosts);
 
+var CorsPolicyName = "AllowedClientOrigins";
+
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: CorsPolicyName,
+        policy =>
+        {
+            policy.WithOrigins(origins)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+        });
+});
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -51,13 +67,15 @@ if (app.Environment.IsDevelopment())
 
 using (var scope = app.Services.CreateScope())
 {
-   var services = scope.ServiceProvider;
+    var services = scope.ServiceProvider;
 
-   var context = services.GetRequiredService<AppDbContext>();
-   DbInitializer.Initialize(context);
+    var context = services.GetRequiredService<AppDbContext>();
+    DbInitializer.Initialize(context);
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(CorsPolicyName);
 
 app.UseAuthorization();
 
