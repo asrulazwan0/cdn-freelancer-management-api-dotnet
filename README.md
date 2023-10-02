@@ -33,6 +33,31 @@ DB_PASS: The password for your database.
 DB_NAME: The name of your database.
 ```
 
+## Docker Instructions
+
+### Building the Docker Image
+
+```bash
+docker build -t myapp .
+```
+
+### Running the Docker Container
+
+```bash
+docker run -p 8000:80 myapp
+```
+
+### Docker Compose
+
+To start and stop the application with Docker Compose, use:
+
+```bash
+docker-compose up
+docker-compose down
+```
+
+Replace `myapp` with your application's name and adjust the port numbers as needed.
+
 ## Client-side
 The client-side of this application can be found in a separate repository: https://github.com/asrulazwan0/cdn-freelancer-management-client-react
 
